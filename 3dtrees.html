@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <link rel="stylesheet" href="css/3dtrees.css"/>
+    <title>3D Trees</title>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+     attribute vec4 aVertexPosition;
+     attribute vec4 aVertexNormal;
+     attribute vec4 aVertexColor;
+     uniform mat4 uMVMatrix;
+     uniform mat4 uNMatrix;
+     uniform mat4 uPMatrix;
+     uniform vec4 uLightPosition;
+     uniform bool uUpdateLight;
+     uniform bool uPerVertexColor;
+     uniform float uPointSize;
+     varying vec3 vNormal, vLightVec, vEyeVec;
+     varying vec4 vFinalColor;
+
+     void main(void) {
+	 if (uPerVertexColor) {
+	     vFinalColor = aVertexColor;
+	 } else {
+	     vec3 pos = (uMVMatrix * aVertexPosition).xyz;
+	     vec3 light;
+	     if (uUpdateLight) {
+		 light = (uMVMatrix * uLightPosition).xyz;
+	     } else {
+		 light = uLightPosition.xyz;
+	     }
+	     vLightVec = pos - light;
+	     vEyeVec = -pos;
+	     vNormal = (uNMatrix * aVertexNormal).xyz;
+	 }
+	 gl_Position = uPMatrix * uMVMatrix * aVertexPosition;
+	 gl_PointSize = uPointSize;
+     }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+     precision mediump float;
+     uniform vec4 uLightAmbient;
+     uniform vec4 uLightDiffuse;
+     uniform vec4 uLightSpecular;
+
+     uniform vec4 uMaterialAmbient;
+     uniform vec4 uMaterialDiffuse;
+     uniform vec4 uMaterialSpecular;
+     uniform float uShininess;
+
+     uniform bool uPerVertexColor;
+
+     varying vec3 vNormal, vLightVec, vEyeVec;
+     varying vec4 vFinalColor;
+
+     void main(void) {
+	 if (uPerVertexColor) {
+	     gl_FragColor = vFinalColor;
+	 } else {
+	     vec4 fColor;
+
+	     vec3 L = normalize(vLightVec);
+	     vec3 N = normalize(vNormal);
+	     vec3 E = normalize(vEyeVec);
+	     vec3 R = reflect(L, N);
+
+	     vec4 ambient = uLightAmbient * uMaterialAmbient;
+
+	     float Kd = max(dot(N, -L), 0.0);
+	     vec4  diffuse = Kd * uLightDiffuse * uMaterialDiffuse;
+
+	     float Ks = pow(max(dot(R, E), 0.0), uShininess);
+	     vec4  specular = Ks * uLightSpecular * uMaterialSpecular;
+
+	     fColor = ambient + diffuse + specular;
+	     fColor.a = 1.0;
+
+	     gl_FragColor = fColor;
+	 }
+     }
+    </script>
+
+    <script type="text/javascript" src="common/webgl-utils.js"></script>
+    <script type="text/javascript" src="common/initShaders.js"></script>
+    <script type="text/javascript" src="common/MV.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/Camera.js"></script>
+    <script type="text/javascript" src="js/CameraInteractor.js"></script>
+    <script type="text/javascript" src="js/SceneTransforms.js"></script>
+    <script type="text/javascript" src="js/3dtrees.js"></script>
+  </head>
+
+  <body>
+    <canvas id="gl-canvas" width="512" height="512">
+      Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+    <p>Dragging mouse to rotate the sphere and lock a bacteria, and then click left mouse button to eradicate it.</p>
+    <p></p>
+    <button id="Button8">Toggle Updating Light Position</button>
+    <p></p>
+    <button id="Button1">Toggle Lighting</button>
+    <label id="toggle-lighting">Lighting Enabled</label>
+    <p></p>
+    <table id="tbl-matrix">
+      <tr><td id='m0' style='font-weight:bold'></td><td id='m4' style='font-weight:bold'></td><td id='m8' style='font-weight:bold'></td><td id='m12'></td></tr>
+      <tr><td id='m1' style='font-weight:bold'></td><td id='m5' style='font-weight:bold'></td><td id='m9' style='font-weight:bold'></td><td id='m13'></td></tr>
+      <tr><td id='m2' style='font-weight:bold'></td><td id='m6' style='font-weight:bold'></td><td id='m10' style='font-weight:bold'></td><td id='m14'></td></tr>
+      <tr><td id='m3'></td><td id='m7'></td><td id='m11'></td><td id='m15'></td></tr>
+    </table>
+  </body>
+</html>
