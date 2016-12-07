@@ -28,13 +28,13 @@ var fovy = 90;
 var cameraHome = vec4(0.0, 1.0, 2.0, 1.0);
 
 var cones = [];
-var numTimesToSubdivide = 3;
+var numTimesToSubdivide = 4;
 var updateLightPosition = false;
 var disableLighting = false;
-var rootArg = {'base': [0, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.0};
+var rootArg = {'base': [0, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.0, 'parentR': mat4()};
 var branchNum = 3;
 var tz = 60;
-var ty = 30;
+var ty = 0;
 var scaleFactor = 0.6;
 
 function configure() {
@@ -134,7 +134,7 @@ function render() {
 
 function updateTransforms() {
     transform.calculateModelView();
-    displayMatrix(transform.mvMatrix);
+    // displayMatrix(transform.mvMatrix);
     var p = {'fovy': fovy, 'aspect': canvas.width / canvas.height,
 	     'near': near, 'far': far};
     transform.calculatePerspective(p);
@@ -217,7 +217,7 @@ function Cone(arg) {
     };
     this.calcTransformMatrix = function(m) {
 	// order of S and R does not matter, but T must be done at last
-	a = mult(mult(mult(m, this.T), this.S), this.R);
+	a = mult(mult(mult(mult(m, this.T), this.S), arg.parentR), this.R);
 	return a;
     };
     this.redraw = function() {
@@ -237,8 +237,7 @@ function Cone(arg) {
 	gl.drawArrays(this.drawMode, 0, this.vertices.length);
     };
     this.getTipPos = function() {
-	// vector addition: add(base, dir)
-	var m = mult(mult(this.T, this.S), this.R);
+	var m = mult(mult(mult(this.T, this.S), arg.parentR), this.R);
 	var baseTip = vec4(rootArg.base);
 	baseTip[1] = 1;
 	var tip = mat4_multiplyVec4(m, baseTip);
@@ -246,6 +245,9 @@ function Cone(arg) {
     };
     this.getArg = function() {
 	return arg;
+    };
+    this.getR = function() {
+	return mult(arg.parentR, this.R);
     };
 };
 
@@ -260,11 +262,13 @@ function genTree(arg, n) {
 	genCone(arg);
     } else {
 	var cone = genCone(arg);
+	var coneArg = cone.getArg();
 	for (var i = 0; i < branchNum; i++) {
 	    var newArg = {'base': cone.getTipPos(),
-			  'tz': tz,
+			  'tz': tz,// getRandomInt(0, tz),
 			  'ty': ty + i * 360 / branchNum,
-			  's': cone.getArg().s * scaleFactor};
+			  's': coneArg.s * scaleFactor,
+			  'parentR': cone.getR()};
 	    genTree(newArg, n - 1);
 	}
     }
