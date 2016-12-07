@@ -32,6 +32,7 @@ var cones = [];
 var numTimesToSubdivide = 5;
 var updateLightPosition = false;
 var disableLighting = false;
+var rootArg = {'base': [0, 0, 0, 1], 'tx': 0, 'tz': 0, 's': 1.0};
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -85,8 +86,7 @@ function initLights() {
 
 function initObjData() {
     cones = [];
-    cones.push(new Cone(genNewConeData()));
-    console.log(normalize([0, 1, 1]));
+    genTree(rootArg, numTimesToSubdivide);
 }
 
 window.onload = function init() {
@@ -118,7 +118,6 @@ function render() {
     for (var i = 0; i < cones.length; i++) {
 	var cone = cones[i];
 	transform.push();
-	cone.updateRotation();
 	newMVMatrix = cone.calcTransformMatrix(transform.mvMatrix);
 	transform.setMVMatrix(newMVMatrix);
 	transform.setMatrixUniforms();
@@ -150,7 +149,7 @@ function toggleLighting() {
 	disableLighting ? 'Lighting Disabled' : 'Lighting Enabled';
 }
 
-function Cone(transformData) {
+function Cone(arg) {
     this.vertices = [];
     this.normals = [];
     this.colors = [];
@@ -163,12 +162,10 @@ function Cone(transformData) {
     this.diffuse = this.ambient;
     this.specular = this.diffuse;
     this.shininess = coneShininess;
-    this.scaleFactor = 1.0;
-    this.tx = transformData.tx;
-    this.ty = transformData.ty;
-    this.S = scale3d(this.scaleFactor, this.scaleFactor, 1.0);
-    this.R = mult(rotate(transformData.tx, [1, 0, 0]),
-		  rotate(transformData.ty, [0, 1, 0]));
+    this.S = scale3d(arg.s, arg.s, arg.s);
+    this.R = mult(rotate(arg.tx, [1, 0, 0]),
+		  rotate(arg.tz, [0, 0, 1]));
+    this.T = translate(arg.base[0], arg.base[1], arg.base[2]);
     this.drawMode = gl.TRIANGLE_FAN;
     this.calcNormals = function() {
 	this.normals = [];
@@ -217,7 +214,7 @@ function Cone(transformData) {
     };
     this.calcTransformMatrix = function(m) {
 	var a = mat4();		// identity
-	a = mult(mult(mult(a, m), this.R), this.S);
+	a = mult(mult(mult(mult(a, m), this.T), this.R), this.S);
 	return a;
     };
     this.redraw = function() {
@@ -236,17 +233,28 @@ function Cone(transformData) {
 	}
 	gl.drawArrays(this.drawMode, 0, this.vertices.length);
     };
-    this.getTransformData = function() {
-	return transformData;
-    };
-    this.updateRotation = function() {
-	var RX = rotate(transformData.tx, [1, 0, 0]);
-	var RY = rotate(transformData.ty, [0, 1, 0]);
-	this.R = mult(RY, RX);
+    this.getTipPos = function() {
+	// vector addition: add(base, dir)
+	return vec4(0, 1, 0, 1);
     };
 };
 
-function genNewConeData() {
-    // return {'tx': getRandomInt(0, 360), 'ty': getRandomInt(0, 360)};
-    return {'tx': -40, 'ty': 0};
+function genCone(arg) {
+    var cone = new Cone(arg);
+    cones.push(cone);
+    return cone;
+}
+
+function genTree(arg, n) {
+    if (n == 0) {
+	genCone(arg);
+    } else {
+	var cone = genCone(arg);
+	var newArg1 = {'base': cone.getTipPos(), 'tx': 30, 'tz': 30, 's': 0.6};
+	var newArg2 = {'base': cone.getTipPos(), 'tx': -30, 'tz': -30, 's': 0.6};
+	var newArg3 = {'base': cone.getTipPos(), 'tx': 60, 'tz': -30, 's': 0.6};
+	genTree(newArg1, n - 1);
+	genTree(newArg2, n - 1);
+	genTree(newArg3, n - 1);
+    }
 }
