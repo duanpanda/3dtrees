@@ -102,8 +102,32 @@ window.onload = function init() {
     initLights();
     initObjData();
 
-    document.getElementById("btn-light-pos").onclick = toggleLightPos;
-    document.getElementById("btn-lighting").onclick = toggleLighting;
+    document.getElementById('btn-light-pos').onclick = toggleLightPos;
+    document.getElementById('btn-lighting').onclick = toggleLighting;
+    var branchNumSlider = document.getElementById('branch-number-slider');
+    branchNum = branchNumSlider.value - 1;
+    document.getElementById('bn').innerHTML = branchNumSlider.value;
+    branchNumSlider.onchange = function(event) {
+	branchNum = branchNumSlider.value - 1;
+	document.getElementById('bn').innerHTML = branchNumSlider.value;
+	initObjData();
+    };
+    var tzSlider = document.getElementById('tz-slider');
+    tz = tzSlider.valueAsNumber;
+    document.getElementById('tz').innerHTML = tzSlider.value;
+    tzSlider.onchange = function(event) {
+	tz = tzSlider.valueAsNumber;
+	document.getElementById('tz').innerHTML = tzSlider.value;
+	initObjData();
+    };
+    var scalingSlider = document.getElementById('scaling-slider');
+    scaleFactor = scalingSlider.valueAsNumber;
+    document.getElementById('sf').innerHTML = scalingSlider.value;
+    scalingSlider.onchange = function(event) {
+	scaleFactor = scalingSlider.valueAsNumber;
+	document.getElementById('sf').innerHTML = scalingSlider.value;
+	initObjData();
+    };
 
     render();
 };

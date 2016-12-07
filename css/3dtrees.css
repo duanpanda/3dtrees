@@ -34,8 +34,21 @@ h1 {
     float: left;
 }
 
-.controls button, .controls input {
-    width: 100px;
+.controls button {
+    height: 25px;
+    margin: 2px 0;
+    vertical-align: middle;
+    background: #555;
+    border-radius: 4px;
+    text-shadow: 1px 1px 2px #000;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.2) inset,
+    0px 0px 0px 3px rgba(0, 0, 0, 0.1) inset;
+}
+
+.controls input {
     height: 25px;
     margin: 2px 0;
     vertical-align: middle;
@@ -55,9 +68,7 @@ h1 {
 
 .controls label {
     display: inline-block;
-    width: 150px;
     color: pink;
-    font-weight: bold;
 }
 
 a:link, a:visited {
@@ -66,6 +77,7 @@ a:link, a:visited {
 
 .controls .slider label {
     font-weight: normal;
+    width: 150px;
     height: 25px;
     margin: 2px 0;
 }
@@ -79,11 +91,8 @@ a:link, a:visited {
     width: 256px;
 }
 
-.game-text {
-    width: 550px;
-    margin: 5px;
-    text-align: center;
+.slider .out {
+    display: inline-block;
     color: blue;
-    font-weight: bold;
-    font-size: 24px;
+    width: 10px;
 }

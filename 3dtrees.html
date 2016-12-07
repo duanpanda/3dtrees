@@ -96,14 +96,34 @@
     <canvas id="gl-canvas" width="512" height="512">
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-    <p>Dragging mouse to rotate the sphere and lock a bacteria, and then click left mouse button to eradicate it.</p>
-    <p></p>
-    <button id="btn-light-pos">Toggle Updating Light Position</button>
-    <label id="toggle-light-pos">Not Updating Light Position</label>
-    <p></p>
-    <button id="btn-lighting">Toggle Lighting</button>
-    <label id="toggle-lighting">Lighting Enabled</label>
-    <p></p>
+    <div class="description">Drag the mouse to rotate the scene.</div>
+    <div class="controls">
+	<div class="slider">
+	    <label>branch number</label>
+	    <input id="branch-number-slider" type="range" min="1" max="5" step="1" value="3" />
+	    <label>(1 to 5)</label><label id="bn" class="out">3</label>
+	</div>
+	<div class="slider">
+	    <label>tz</label>
+	    <input id="tz-slider" type="range" min="20" max="80" step="10" value="50" />
+	    <label>(20 to 80)</label><label id="tz" class="out">50</label>
+	</div>
+	<div class="slider">
+	    <label>scaling factor</label>
+	    <input id="scaling-slider" type="range" min="0.2" max="1.0" step="0.1" value="0.6" />
+	    <label>(0.2 to 1.0)</label><label id="sf" class="out">0.6</label>
+	</div>
+	<div>
+	<button id="btn-light-pos">Toggle Updating Light Position</button>
+	<label id="toggle-light-pos">Not Updating Light Position</label>
+	</div>
+	<p></p>
+	<p></p>
+	<div>
+	<button id="btn-lighting">Toggle Lighting</button>
+	<label id="toggle-lighting">Lighting Enabled</label>
+	</div>
+    </div>
     <table id="tbl-matrix">
       <tr><td id='m0' style='font-weight:bold'></td><td id='m4' style='font-weight:bold'></td><td id='m8' style='font-weight:bold'></td><td id='m12'></td></tr>
       <tr><td id='m1' style='font-weight:bold'></td><td id='m5' style='font-weight:bold'></td><td id='m9' style='font-weight:bold'></td><td id='m13'></td></tr>
