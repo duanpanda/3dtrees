@@ -9,10 +9,10 @@ var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
 var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 var coneColorPallete = [
-    vec4(0.9, 0.1, 0.1, 1.0),
-    vec4(116/255, 23/255, 1.0, 1.0),
-    vec4(0.1, 0.9, 0.1, 1.0),
-    vec4(1.0, 0.0, 144/255, 1.0),
+    // vec4(0.9, 0.1, 0.1, 1.0),
+    // vec4(116/255, 23/255, 1.0, 1.0),
+    // vec4(0.1, 0.9, 0.1, 1.0),
+    // vec4(1.0, 0.0, 144/255, 1.0),
     vec4(1.0, 112/255, 112/255, 1.0)];
 var coneShininess = 100.0;
 
@@ -27,12 +27,15 @@ var far = 5000;
 var fovy = 90;
 var cameraHome = vec4(0.0, 1.0, 2.0, 1.0);
 
-var maxNumCones = 5;
 var cones = [];
-var numTimesToSubdivide = 5;
+var numTimesToSubdivide = 3;
 var updateLightPosition = false;
 var disableLighting = false;
-var rootArg = {'base': [0, 0, 0, 1], 'tx': 0, 'tz': 0, 's': 1.0};
+var rootArg = {'base': [0, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.0};
+var branchNum = 3;
+var tz = 60;
+var ty = 30;
+var scaleFactor = 0.6;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -163,7 +166,7 @@ function Cone(arg) {
     this.specular = this.diffuse;
     this.shininess = coneShininess;
     this.S = scale3d(arg.s, arg.s, arg.s);
-    this.R = mult(rotate(arg.tx, [1, 0, 0]),
+    this.R = mult(rotate(arg.ty, [0, 1, 0]),
 		  rotate(arg.tz, [0, 0, 1]));
     this.T = translate(arg.base[0], arg.base[1], arg.base[2]);
     this.drawMode = gl.TRIANGLE_FAN;
@@ -213,8 +216,8 @@ function Cone(arg) {
 	gl.uniform1f(prg.uShininess, this.shininess);
     };
     this.calcTransformMatrix = function(m) {
-	var a = mat4();		// identity
-	a = mult(mult(mult(mult(a, m), this.T), this.R), this.S);
+	// order of S and R does not matter, but T must be done at last
+	a = mult(mult(mult(m, this.T), this.S), this.R);
 	return a;
     };
     this.redraw = function() {
@@ -235,7 +238,14 @@ function Cone(arg) {
     };
     this.getTipPos = function() {
 	// vector addition: add(base, dir)
-	return vec4(0, 1, 0, 1);
+	var m = mult(mult(this.T, this.S), this.R);
+	var baseTip = vec4(rootArg.base);
+	baseTip[1] = 1;
+	var tip = mat4_multiplyVec4(m, baseTip);
+	return tip;
+    };
+    this.getArg = function() {
+	return arg;
     };
 };
 
@@ -250,11 +260,12 @@ function genTree(arg, n) {
 	genCone(arg);
     } else {
 	var cone = genCone(arg);
-	var newArg1 = {'base': cone.getTipPos(), 'tx': 30, 'tz': 30, 's': 0.6};
-	var newArg2 = {'base': cone.getTipPos(), 'tx': -30, 'tz': -30, 's': 0.6};
-	var newArg3 = {'base': cone.getTipPos(), 'tx': 60, 'tz': -30, 's': 0.6};
-	genTree(newArg1, n - 1);
-	genTree(newArg2, n - 1);
-	genTree(newArg3, n - 1);
+	for (var i = 0; i < branchNum; i++) {
+	    var newArg = {'base': cone.getTipPos(),
+			  'tz': tz,
+			  'ty': ty + i * 360 / branchNum,
+			  's': cone.getArg().s * scaleFactor};
+	    genTree(newArg, n - 1);
+	}
     }
 }
