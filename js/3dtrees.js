@@ -14,7 +14,7 @@ var coneColorPallete = [
     vec4(0.1, 0.9, 0.1, 1.0),
     vec4(1.0, 0.0, 144/255, 1.0),
     vec4(1.0, 112/255, 112/255, 1.0)];
-var coneShininess = 200.0;
+var coneShininess = 100.0;
 
 var transform;
 var camera;
@@ -86,6 +86,7 @@ function initLights() {
 function initObjData() {
     cones = [];
     cones.push(new Cone(genNewConeData()));
+    console.log(normalize([0, 1, 1]));
 }
 
 window.onload = function init() {
@@ -98,8 +99,8 @@ window.onload = function init() {
     initLights();
     initObjData();
 
-    document.getElementById("Button8").onclick = toggleLightPos;
-    document.getElementById("Button1").onclick = toggleLighting;
+    document.getElementById("btn-light-pos").onclick = toggleLightPos;
+    document.getElementById("btn-lighting").onclick = toggleLighting;
 
     render();
 };
@@ -139,14 +140,14 @@ function updateTransforms() {
 
 function toggleLightPos() {
     updateLightPosition = !updateLightPosition;
-    console.log('updateLightPosition =', updateLightPosition);
+    document.getElementById('toggle-light-pos').innerHTML =
+	updateLightPosition ? 'Updating Light Position' : 'Not Updating Light Position';
 }
 
 function toggleLighting() {
     disableLighting = !disableLighting;
-    console.log('disableLighting =', disableLighting);
     document.getElementById('toggle-lighting').innerHTML =
-	disableLighting ? 'Lighting Disabled' : 'Lighting Enagled';
+	disableLighting ? 'Lighting Disabled' : 'Lighting Enabled';
 }
 
 function Cone(transformData) {
@@ -193,8 +194,8 @@ function Cone(transformData) {
 	this.vertices = [vec4(0, 1, 0, 1.0)];
 	var x, z, p;
 	for (var theta = 0; theta <= 360; theta += 10) {
-	    x = 0.2 * Math.cos(theta * DEGREE_TO_RADIAN);
-	    z = 0.2 * Math.sin(theta * DEGREE_TO_RADIAN);
+	    x = 0.1 * Math.cos(theta * DEGREE_TO_RADIAN);
+	    z = 0.1 * Math.sin(theta * DEGREE_TO_RADIAN);
 	    p = vec4(x, 0, z, 1.0);
 	    this.vertices.push(p);
 	}
