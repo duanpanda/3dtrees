@@ -263,12 +263,18 @@ function genTree(arg, n) {
     } else {
 	var cone = genCone(arg);
 	var coneArg = cone.getArg();
+	var newArg = {'base': cone.getTipPos(),
+		      'tz': 0,
+		      'ty': 0,
+		      's': coneArg.s * scaleFactor,
+		      'parentR': cone.getR()};
+	genTree(newArg, n - 1);
 	for (var i = 0; i < branchNum; i++) {
-	    var newArg = {'base': cone.getTipPos(),
-			  'tz': tz,// getRandomInt(0, tz),
-			  'ty': ty + i * 360 / branchNum,
-			  's': coneArg.s * scaleFactor,
-			  'parentR': cone.getR()};
+	    newArg = {'base': cone.getTipPos(),
+		      'tz': tz,// getRandomInt(0, tz),
+		      'ty': ty + i * 360 / branchNum,
+		      's': coneArg.s * scaleFactor,
+		      'parentR': cone.getR()};
 	    genTree(newArg, n - 1);
 	}
     }
