@@ -15,7 +15,7 @@ var coneColorPallete = [
     // vec4(1.0, 0.0, 144/255, 1.0),
     vec4(1.0, 112/255, 112/255, 1.0)];
 var coneShininess = 100.0;
-var leafColor = vec4(0.0, 0.8, 0.4, 1.0);
+var leafColor = vec4(0.0, 0.8, 0.0, 1.0);
 var leafShininess = 50.0;
 
 var transform;
@@ -113,6 +113,7 @@ function initObjData() {
     } else {
 	camera.goHome(cameraHome);
 	genTree(rootArg, numTimesToSubdivide);
+	// genLeaf(rootArg);
     }
 }
 
@@ -272,12 +273,10 @@ function Cone(arg) {
 	for (var i = 0; i < this.vertices.length; i++) {
 	    var v = this.vertices[i];
 	    n = vec4(v[0], v[1], v[2], 0.0);
-	    // For better performance, according to profiling result, change to
-	    // the above.
-	    // n = vec4(this.vertices[i]);
-	    // n[3] = 0.0;
 	    this.normals.push(n);
 	}
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
+	gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
     };
     this.setColor = function(c) {
 	this.color = c;
@@ -303,8 +302,6 @@ function Cone(arg) {
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
 
 	this.setColor(this.diffuse);
     };
@@ -411,19 +408,23 @@ function Leaf(arg) {
     this.diffuse = this.ambient;
     this.specular = this.diffuse;
     this.shininess = leafShininess;
-    this.S = scale3d(arg.s, arg.s, arg.s);
+    this.S = scale3d(arg.s, arg.s * 2, arg.s);
     this.R = mult(rotate(arg.ty, [0, 1, 0]),
 		  rotate(arg.tz, [0, 0, 1]));
     this.T = translate(arg.base[0], arg.base[1], arg.base[2]);
     this.drawMode = gl.TRIANGLES;
     this.calcNormals = function() {
-	this.normals = [];
-	for (var i = 0; i < 3; i++) {
-	    this.normals.push([0, 0, 1, 0]);
-	}
-	for (i = 0; i < 3; i++) {
-	    this.normals.push([0, 0, -1, 0]);
-	}
+	this.normals = new Array(this.indices.length * 3);
+	this.normals = calculateNormals(flatten(this.vertices), flatten(this.indices));
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
+	gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
+
+	// for (var i = 0; i < this.normals.length / 2; i++) {
+	//     this.normals.push(vec4(0, 0, 1, 0));
+	// }
+	// for (i = 0; i < this.normals.length / 2; i++) {
+	//     this.normals.push(vec4(0, 0, -1, 0));
+	// }
     };
     this.setColor = function(c) {
 	this.color = c;
@@ -438,22 +439,20 @@ function Leaf(arg) {
     };
     this.genPoints = function() {
 	this.vertices = [
-	    vec4(0, 0, 0, 1.0),
-	    vec4(-0.2, 0.2, 0, 1.0),
-	    vec4(0.2, 0.2, 0, 1.0),
-	];
-	this.vertices[3] = this.vertices[0];
-	this.vertices[4] = this.vertices[1];
-	this.vertices[5] = this.vertices[2];
+	    vec4(-0.02, 0, 0, 1.0), vec4(0.02, 0, 0, 1.0), vec4(-0.02, 0.1, 0, 1.0),
+	    vec4(0.02, 0.1, 0, 1.0), vec4(-0.15, 0.1, 0, 1.0), vec4(0.15, 0.1, 0, 1.0),
+	    vec4(0.15, 0.2, 0, 1.0), vec4(-0.15, 0.2, 0, 1.0), vec4(0, 0.3, 0, 1.0),
+	    vec4(-0.25, 0.25, 0, 1.0), vec4(-0.15, 0.15, 0, 1.0), vec4(-0.28, 0.08, 0, 1.0),
+	    vec4(0.25, 0.25, 0, 1.0), vec4(0.15, 0.15, 0, 1.0), vec4(0.25, 0.08, 0, 1.0)];
 	this.indices = [
-	    0, 1, 2,
-	    0, 1, 2];
+	    0, 1, 2,    1, 2, 3,    4, 5, 7,    5, 7, 6,    6, 7, 8,    4, 9, 7,
+	    4, 10, 11,    5, 12, 6,    5, 14, 13,
+	    0, 1, 2,    1, 2, 3,    4, 5, 7,    5, 7, 6,    6, 7, 8,    4, 9, 7,
+	    4, 10, 11,    5, 12, 6,    5, 14, 13];
 	this.calcNormals();
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
 
