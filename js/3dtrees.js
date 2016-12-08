@@ -451,22 +451,26 @@ function Leaf(arg) {
     };
     this.genPoints = function() {
 	this.vertices = [
-	    vec4(-0.02, 0, 0, 1.0), vec4(0.02, 0, 0, 1.0), vec4(-0.02, 0.1, 0, 1.0),
-	    vec4(0.02, 0.1, 0, 1.0), vec4(-0.15, 0.1, 0, 1.0), vec4(0.15, 0.1, 0, 1.0),
-	    vec4(0.15, 0.2, 0, 1.0), vec4(-0.15, 0.2, 0, 1.0), vec4(0, 0.3, 0, 1.0),
-	    vec4(-0.25, 0.25, 0, 1.0), vec4(-0.15, 0.15, 0, 1.0), vec4(-0.28, 0.08, 0, 1.0),
-	    vec4(0.25, 0.25, 0, 1.0), vec4(0.15, 0.15, 0, 1.0), vec4(0.25, 0.08, 0, 1.0)];
+	    vec4(-0.02, 0, 0, 1.0), vec4(0.02, 0, 0, 1.0),
+	    vec4(-0.02, 0.1, 0, 1.0), vec4(0.02, 0.1, 0, 1.0),
+	    vec4(-0.15, 0.1, 0, 1.0), vec4(0.15, 0.1, 0, 1.0),
+	    vec4(0.15, 0.2, 0, 1.0), vec4(-0.15, 0.2, 0, 1.0),
+	    vec4(0, 0.3, 0, 1.0), vec4(-0.25, 0.25, 0, 1.0),
+	    vec4(-0.15, 0.15, 0, 1.0), vec4(-0.28, 0.08, 0, 1.0),
+	    vec4(0.25, 0.25, 0, 1.0), vec4(0.15, 0.15, 0, 1.0),
+	    vec4(0.25, 0.08, 0, 1.0)];
 	this.indices = [
-	    0, 1, 2,    1, 2, 3,    4, 5, 7,    5, 7, 6,    6, 7, 8,    4, 9, 7,
-	    4, 10, 11,    5, 12, 6,    5, 14, 13,
-	    0, 1, 2,    1, 2, 3,    4, 5, 7,    5, 7, 6,    6, 7, 8,    4, 9, 7,
-	    4, 10, 11,    5, 12, 6,    5, 14, 13];
+	    0, 1, 2,	1, 2, 3,	 4, 5, 7,	 5, 7, 6,	 6, 7, 8,
+	    4, 9, 7,	4, 10, 11,	5, 12, 6,	 5, 14, 13,
+	    0, 1, 2,	1, 2, 3,	 4, 5, 7,	 5, 7, 6,	 6, 7, 8,
+	    4, 9, 7,	4, 10, 11,	5, 12, 6,	 5, 14, 13];
 	this.calcNormals();
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices),
+		      gl.STATIC_DRAW);
 
 	this.setColor(this.diffuse);
     };
