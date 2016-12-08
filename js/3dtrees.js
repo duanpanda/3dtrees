@@ -36,6 +36,9 @@ var branchNum = 3;
 var tz = 60;
 var ty = 0;
 var scaleFactor = 0.6;
+var isRandBranchNum = false;
+var isRandTz = false;
+var isRandScaling = false;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -92,15 +95,8 @@ function initObjData() {
     genTree(rootArg, numTimesToSubdivide);
 }
 
-window.onload = function init() {
-    canvas = document.getElementById("gl-canvas");
-    gl = WebGLUtils.setupWebGL(canvas);
-    if (!gl) { alert( "WebGL isn't available"); }
-
-    configure();
-    initProgram();
-    initLights();
-
+function initGUIControls() {
+    document.getElementById('regenerate').onclick = initObjData;
     document.getElementById('btn-light-pos').onclick = toggleLightPos;
     document.getElementById('btn-lighting').onclick = toggleLighting;
 
@@ -136,7 +132,32 @@ window.onload = function init() {
 	document.getElementById('sf').innerHTML = scalingSlider.value;
 	initObjData();
     };
+    var bnCbox = document.getElementById('bn-cbox');
+    bnCbox.onchange = function(event) {
+	isRandBranchNum = bnCbox.checked;
+	initObjData();
+    };
+    var tzCbox = document.getElementById('tz-cbox');
+    tzCbox.onchange = function(event) {
+	isRandTz = tzCbox.checked;
+	initObjData();
+    };
+    var sCbox = document.getElementById('s-cbox');
+    sCbox.onchange = function(event) {
+	isRandScaling = sCbox.checked;
+	initObjData();
+    };
+}
 
+window.onload = function init() {
+    canvas = document.getElementById("gl-canvas");
+    gl = WebGLUtils.setupWebGL(canvas);
+    if (!gl) { alert( "WebGL isn't available"); }
+
+    configure();
+    initProgram();
+    initLights();
+    initGUIControls();
     initObjData();
 
     render();
@@ -303,11 +324,14 @@ function genTree(arg, n) {
 		      's': coneArg.s * scaleFactor,
 		      'parentR': cone.getR()};
 	genTree(newArg, n - 1);
-	for (var i = 0; i < branchNum; i++) {
+	var bn = isRandBranchNum ? getRandomInt(0, 6) : branchNum;
+	var new_tz = isRandTz ? getRandomInt(20, 80) : tz;
+	var new_sf = isRandScaling ? getRandomArbitrary(0.4, 0.7) : scaleFactor;
+	for (var i = 0; i < bn; i++) {
 	    newArg = {'base': cone.getTipPos(),
-		      'tz': tz,
-		      'ty': ty + i * 360 / branchNum,
-		      's': coneArg.s * scaleFactor,
+		      'tz': new_tz,
+		      'ty': ty + i * 360 / bn,
+		      's': coneArg.s * new_sf,
 		      'parentR': cone.getR()};
 	    genTree(newArg, n - 1);
 	}
