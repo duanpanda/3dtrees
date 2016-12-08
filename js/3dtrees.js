@@ -276,7 +276,7 @@ function Cone(arg) {
 	    this.normals.push(n);
 	}
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
-	gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
     };
     this.setColor = function(c) {
 	this.color = c;
@@ -414,17 +414,15 @@ function Leaf(arg) {
     this.T = translate(arg.base[0], arg.base[1], arg.base[2]);
     this.drawMode = gl.TRIANGLES;
     this.calcNormals = function() {
-	this.normals = new Array(this.indices.length * 3);
-	this.normals = calculateNormals(flatten(this.vertices), flatten(this.indices));
+	this.normals = new Array(this.indices.length);
+	for (var i = 0; i < this.normals.length / 2; i++) {
+	    this.normals[i] = vec4(0, 0, 1, 0);
+	}
+	for (i = this.normals.length / 2; i < this.normals.length; i++) {
+	    this.normals[i] = vec4(0, 0, -1, 0);
+	}
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
-	gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW);
-
-	// for (var i = 0; i < this.normals.length / 2; i++) {
-	//     this.normals.push(vec4(0, 0, 1, 0));
-	// }
-	// for (i = 0; i < this.normals.length / 2; i++) {
-	//     this.normals.push(vec4(0, 0, -1, 0));
-	// }
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
     };
     this.setColor = function(c) {
 	this.color = c;
@@ -484,7 +482,8 @@ function Leaf(arg) {
 	    gl.disableVertexAttribArray(prg.aVertexColor);
 	    gl.vertexAttribPointer(prg.aVertexNormal, 4, gl.FLOAT, false, 0, 0);
 	}
-	gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+	gl.drawElements(this.drawMode, this.indices.length, gl.UNSIGNED_SHORT, 0);
     };
 }
 
