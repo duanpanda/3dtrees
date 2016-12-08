@@ -52,6 +52,7 @@ var isRandTz = false;
 var isRandScaling = false;
 var isForest = false;
 var leaves = [];
+var isPolygonLeaf = false;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -105,13 +106,13 @@ function initLights() {
 
 function initObjData() {
     cones = [];
+    leaves = [];
     if (isForest) {
 	camera.goHome(cameraHomeForest);
 	genForest();
     } else {
 	camera.goHome(cameraHome);
 	genTree(rootArg, numTimesToSubdivide);
-	// genLeaf(rootArg);
     }
 }
 
@@ -170,6 +171,11 @@ function initGUIControls() {
     var forestCbox = document.getElementById('forest-cbox');
     forestCbox.onchange = function(event) {
 	isForest = forestCbox.checked;
+	initObjData();
+    };
+    var polygonLeafCbox = document.getElementById('leaf-cbox');
+    polygonLeafCbox.onchange = function(event) {
+	isPolygonLeaf = polygonLeafCbox.checked;
 	initObjData();
     };
 }
@@ -353,7 +359,11 @@ function genCone(arg) {
 
 function genTree(arg, n) {
     if (n == 0) {
-	genLeaf(arg);
+	if (isPolygonLeaf) {
+	    genLeaf(arg);
+	} else {
+	    genCone(arg);
+	}
     } else {
 	var cone = genCone(arg);
 	var coneArg = cone.getArg();
@@ -389,9 +399,12 @@ function Leaf(arg) {
     this.vertices = [];
     this.normals = [];
     this.colors = [];
+    this.indices = [];
     this.vbo = gl.createBuffer();
     this.cbo = gl.createBuffer();
     this.nbo = gl.createBuffer();
+    this.ibo = gl.createBuffer();
+    this.indices = gl.createBuffer();
     this.color = leafColor;
 
     this.ambient = this.color;
@@ -432,12 +445,17 @@ function Leaf(arg) {
 	this.vertices[3] = this.vertices[0];
 	this.vertices[4] = this.vertices[1];
 	this.vertices[5] = this.vertices[2];
+	this.indices = [
+	    0, 1, 2,
+	    0, 1, 2];
 	this.calcNormals();
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
 
 	this.setColor(this.diffuse);
     };
@@ -467,7 +485,7 @@ function Leaf(arg) {
 	    gl.disableVertexAttribArray(prg.aVertexColor);
 	    gl.vertexAttribPointer(prg.aVertexNormal, 4, gl.FLOAT, false, 0, 0);
 	}
-	gl.drawArrays(this.drawMode, 0, this.vertices.length);
+	gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
     };
 }
 
