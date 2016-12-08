@@ -26,13 +26,21 @@ var near = 0.2;
 var far = 5000;
 var fovy = 90;
 var cameraHome = vec3(0.0, 1.0, 2.0);
-var cameraHomeForest = vec3(0.0, 1.0, 4.0);
+var cameraHomeForest = vec3(0.0, 2.0, 4.0);
 
 var cones = [];
 var numTimesToSubdivide = 4;
 var updateLightPosition = false;
 var disableLighting = false;
 var rootArg = {'base': [0, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.0, 'parentR': mat4()};
+var forestArgs = [
+    {'base': [0, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.9, 'parentR': mat4()},
+    {'base': [0.1, 0, 1.4, 1], 'tz': 0, 'ty': 0, 's': 1.0, 'parentR': mat4()},
+    {'base': [-1.0, 0, 1.3, 1], 'tz': 0, 'ty': 0, 's': 0.8, 'parentR': mat4()},
+    {'base': [-1.5, 0, -1.7, 1], 'tz': 0, 'ty': 0, 's': 0.7, 'parentR': mat4()},
+    {'base': [1.6, 0, 0.8, 1], 'tz': 0, 'ty': 0, 's': 0.4, 'parentR': mat4()},
+    {'base': [1.8, 0, -2.0, 1], 'tz': 0, 'ty': 0, 's': 1.0, 'parentR': mat4()}
+];
 var branchNum = 3;
 var tz = 60;
 var ty = 0;
@@ -352,8 +360,9 @@ function genTree(arg, n) {
 }
 
 function genForest() {
-    console.log('genForest');
-    genTree(rootArg, numTimesToSubdivide);
-    var tree1Arg = {'base': [2, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.0, 'parentR': mat4()};
-    genTree(tree1Arg, numTimesToSubdivide);
+    console.log('generating forest...');
+    for (var i = 0; i < forestArgs.length; i++) {
+	genTree(forestArgs[i], numTimesToSubdivide);
+    }
+    console.log('done');
 }
