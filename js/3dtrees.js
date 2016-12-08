@@ -250,8 +250,12 @@ function Cone(arg) {
 	this.normals = [];
 	var n;
 	for (var i = 0; i < this.vertices.length; i++) {
-	    n = vec4(this.vertices[i]);
-	    n[3] = 0.0;
+	    var v = this.vertices[i];
+	    n = vec4(v[0], v[1], v[2], 0.0);
+	    // For better performance, according to profiling result, change to
+	    // the above.
+	    // n = vec4(this.vertices[i]);
+	    // n[3] = 0.0;
 	    this.normals.push(n);
 	}
     };
