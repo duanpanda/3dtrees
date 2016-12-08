@@ -15,6 +15,8 @@ var coneColorPallete = [
     // vec4(1.0, 0.0, 144/255, 1.0),
     vec4(1.0, 112/255, 112/255, 1.0)];
 var coneShininess = 100.0;
+var leafColor = vec4(0.0, 0.8, 0.4, 1.0);
+var leafShininess = 50.0;
 
 var transform;
 var camera;
@@ -49,6 +51,7 @@ var isRandBranchNum = false;
 var isRandTz = false;
 var isRandScaling = false;
 var isForest = false;
+var leaves = [];
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -108,6 +111,7 @@ function initObjData() {
     } else {
 	camera.goHome(cameraHome);
 	genTree(rootArg, numTimesToSubdivide);
+	// genLeaf(rootArg);
     }
 }
 
@@ -203,6 +207,16 @@ function render() {
 	transform.pop();
 	cone.setLights();
 	cone.redraw();
+    }
+    for (i = 0; i < leaves.length; i++) {
+	var leaf = leaves[i];
+	transform.push();
+	newMVMatrix = leaf.calcTransformMatrix(transform.mvMatrix);
+	transform.setMVMatrix(newMVMatrix);
+	transform.setMatrixUniforms();
+	transform.pop();
+	leaf.setLights();
+	leaf.redraw();
     }
 
     requestAnimFrame(render);
@@ -339,7 +353,7 @@ function genCone(arg) {
 
 function genTree(arg, n) {
     if (n == 0) {
-	genCone(arg);
+	genLeaf(arg);
     } else {
 	var cone = genCone(arg);
 	var coneArg = cone.getArg();
@@ -369,4 +383,96 @@ function genForest() {
 	genTree(forestArgs[i], numTimesToSubdivide);
     }
     console.log('done');
+}
+
+function Leaf(arg) {
+    this.vertices = [];
+    this.normals = [];
+    this.colors = [];
+    this.vbo = gl.createBuffer();
+    this.cbo = gl.createBuffer();
+    this.nbo = gl.createBuffer();
+    this.color = leafColor;
+
+    this.ambient = this.color;
+    this.diffuse = this.ambient;
+    this.specular = this.diffuse;
+    this.shininess = leafShininess;
+    this.S = scale3d(arg.s, arg.s, arg.s);
+    this.R = mult(rotate(arg.ty, [0, 1, 0]),
+		  rotate(arg.tz, [0, 0, 1]));
+    this.T = translate(arg.base[0], arg.base[1], arg.base[2]);
+    this.drawMode = gl.TRIANGLES;
+    this.calcNormals = function() {
+	this.normals = [];
+	for (var i = 0; i < 3; i++) {
+	    this.normals.push([0, 0, 1, 0]);
+	}
+	for (i = 0; i < 3; i++) {
+	    this.normals.push([0, 0, -1, 0]);
+	}
+    };
+    this.setColor = function(c) {
+	this.color = c;
+	if (this.colors.length != this.vertices.length) {
+	    this.colors = new Array(this.vertices.length);
+	}
+	for (var i = 0; i < this.colors.length; i++) {
+	    this.colors[i] = c;
+	}
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.cbo);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.colors), gl.STATIC_DRAW);
+    };
+    this.genPoints = function() {
+	this.vertices = [
+	    vec4(0, 0, 0, 1.0),
+	    vec4(-0.2, 0.2, 0, 1.0),
+	    vec4(0.2, 0.2, 0, 1.0),
+	];
+	this.vertices[3] = this.vertices[0];
+	this.vertices[4] = this.vertices[1];
+	this.vertices[5] = this.vertices[2];
+	this.calcNormals();
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.vertices), gl.STATIC_DRAW);
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
+
+	this.setColor(this.diffuse);
+    };
+    this.genPoints();
+    this.setLights = function() {
+	gl.uniform4fv(prg.uMaterialAmbient, this.ambient);
+	gl.uniform4fv(prg.uMaterialDiffuse, this.diffuse);
+	gl.uniform4fv(prg.uMaterialSpecular, this.specular);
+	gl.uniform1f(prg.uShininess, this.shininess);
+    };
+    this.calcTransformMatrix = function(m) {
+	// order of S and R does not matter, but T must be done at last
+	a = mult(mult(mult(mult(m, this.T), this.S), arg.parentR), this.R);
+	return a;
+    };
+    this.redraw = function() {
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+	gl.vertexAttribPointer(prg.aVertexPosition, 4, gl.FLOAT, false, 0, 0);
+	if (disableLighting) {
+	    gl.bindBuffer(gl.ARRAY_BUFFER, this.cbo);
+	    gl.enableVertexAttribArray(prg.aVertexColor);
+	    gl.disableVertexAttribArray(prg.aVertexNormal);
+	    gl.vertexAttribPointer(prg.aVertexColor, 4, gl.FLOAT, false, 0, 0);
+	} else {
+	    gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
+	    gl.enableVertexAttribArray(prg.aVertexNormal);
+	    gl.disableVertexAttribArray(prg.aVertexColor);
+	    gl.vertexAttribPointer(prg.aVertexNormal, 4, gl.FLOAT, false, 0, 0);
+	}
+	gl.drawArrays(this.drawMode, 0, this.vertices.length);
+    };
+}
+
+function genLeaf(arg) {
+    var leaf = new Leaf(arg);
+    leaves.push(leaf);
+    return leaf;
 }
