@@ -24,6 +24,7 @@ var cameraInteractor;
 
 const CAMERA_ORBIT_TYPE = 1;
 const CAMERA_TRACKING_TYPE = 2;
+var cameraType = CAMERA_ORBIT_TYPE;
 var near = 0.2;
 var far = 5000;
 var fovy = 90;
@@ -59,8 +60,12 @@ function configure() {
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
-    camera = new Camera(CAMERA_ORBIT_TYPE);
-    camera.goHome(cameraHome);
+    camera = new Camera(cameraType);
+    if (isForest) {
+	camera.goHome(cameraHomeForest);
+    } else {
+	camera.goHome(cameraHome);
+    }
 
     cameraInteractor = new CameraInteractor(camera, canvas);
 
@@ -113,7 +118,6 @@ function initObjData() {
     } else {
 	camera.goHome(cameraHome);
 	genTree(rootArg, numTimesToSubdivide);
-	// genLeaf(rootArg);
     }
 }
 
@@ -178,6 +182,16 @@ function initGUIControls() {
     polygonLeafCbox.onchange = function(event) {
 	isPolygonLeaf = polygonLeafCbox.checked;
 	initObjData();
+    };
+    var orbitingRadio = document.getElementById('opt-orbiting');
+    orbitingRadio.onclick = function(event) {
+	cameraType = CAMERA_ORBIT_TYPE;
+	configure();
+    };
+    var trackingRadio = document.getElementById('opt-tracking');
+    trackingRadio.onclick = function(event) {
+	cameraType = CAMERA_TRACKING_TYPE;
+	configure();
     };
 }
 
