@@ -25,7 +25,8 @@ const CAMERA_TRACKING_TYPE = 2;
 var near = 0.2;
 var far = 5000;
 var fovy = 90;
-var cameraHome = vec4(0.0, 1.0, 2.0, 1.0);
+var cameraHome = vec3(0.0, 1.0, 2.0);
+var cameraHomeForest = vec3(0.0, 1.0, 4.0);
 
 var cones = [];
 var numTimesToSubdivide = 4;
@@ -39,6 +40,7 @@ var scaleFactor = 0.6;
 var isRandBranchNum = false;
 var isRandTz = false;
 var isRandScaling = false;
+var isForest = false;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -46,7 +48,7 @@ function configure() {
     gl.enable(gl.DEPTH_TEST);
 
     camera = new Camera(CAMERA_ORBIT_TYPE);
-    camera.goHome([0, 1, 2]);
+    camera.goHome(cameraHome);
 
     cameraInteractor = new CameraInteractor(camera, canvas);
 
@@ -92,7 +94,13 @@ function initLights() {
 
 function initObjData() {
     cones = [];
-    genTree(rootArg, numTimesToSubdivide);
+    if (isForest) {
+	camera.goHome(cameraHomeForest);
+	genForest();
+    } else {
+	camera.goHome(cameraHome);
+	genTree(rootArg, numTimesToSubdivide);
+    }
 }
 
 function initGUIControls() {
@@ -145,6 +153,11 @@ function initGUIControls() {
     var sCbox = document.getElementById('s-cbox');
     sCbox.onchange = function(event) {
 	isRandScaling = sCbox.checked;
+	initObjData();
+    };
+    var forestCbox = document.getElementById('forest-cbox');
+    forestCbox.onchange = function(event) {
+	isForest = forestCbox.checked;
 	initObjData();
     };
 }
@@ -336,4 +349,11 @@ function genTree(arg, n) {
 	    genTree(newArg, n - 1);
 	}
     }
+}
+
+function genForest() {
+    console.log('genForest');
+    genTree(rootArg, numTimesToSubdivide);
+    var tree1Arg = {'base': [2, 0, 0, 1], 'tz': 0, 'ty': 0, 's': 1.0, 'parentR': mat4()};
+    genTree(tree1Arg, numTimesToSubdivide);
 }

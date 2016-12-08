@@ -1,152 +1,153 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
-    <link rel="stylesheet" href="css/3dtrees.css"/>
-    <title>3D Trees</title>
+    <head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+	<link rel="stylesheet" href="css/3dtrees.css"/>
+	<title>3D Trees</title>
 
-    <script id="vertex-shader" type="x-shader/x-vertex">
-     attribute vec4 aVertexPosition;
-     attribute vec4 aVertexNormal;
-     attribute vec4 aVertexColor;
-     uniform mat4 uMVMatrix;
-     uniform mat4 uNMatrix;
-     uniform mat4 uPMatrix;
-     uniform vec4 uLightPosition;
-     uniform bool uUpdateLight;
-     uniform bool uPerVertexColor;
-     uniform float uPointSize;
-     varying vec3 vNormal, vLightVec, vEyeVec;
-     varying vec4 vFinalColor;
+	<script id="vertex-shader" type="x-shader/x-vertex">
+	 attribute vec4 aVertexPosition;
+	 attribute vec4 aVertexNormal;
+	 attribute vec4 aVertexColor;
+	 uniform mat4 uMVMatrix;
+	 uniform mat4 uNMatrix;
+	 uniform mat4 uPMatrix;
+	 uniform vec4 uLightPosition;
+	 uniform bool uUpdateLight;
+	 uniform bool uPerVertexColor;
+	 uniform float uPointSize;
+	 varying vec3 vNormal, vLightVec, vEyeVec;
+	 varying vec4 vFinalColor;
 
-     void main(void) {
-	 if (uPerVertexColor) {
-	     vFinalColor = aVertexColor;
-	 } else {
-	     vec3 pos = (uMVMatrix * aVertexPosition).xyz;
-	     vec3 light;
-	     if (uUpdateLight) {
-		 light = (uMVMatrix * uLightPosition).xyz;
+	 void main(void) {
+	     if (uPerVertexColor) {
+		 vFinalColor = aVertexColor;
 	     } else {
-		 light = uLightPosition.xyz;
+		 vec3 pos = (uMVMatrix * aVertexPosition).xyz;
+		 vec3 light;
+		 if (uUpdateLight) {
+		     light = (uMVMatrix * uLightPosition).xyz;
+		 } else {
+		     light = uLightPosition.xyz;
+		 }
+		 vLightVec = pos - light;
+		 vEyeVec = -pos;
+		 vNormal = (uNMatrix * aVertexNormal).xyz;
 	     }
-	     vLightVec = pos - light;
-	     vEyeVec = -pos;
-	     vNormal = (uNMatrix * aVertexNormal).xyz;
+	     gl_Position = uPMatrix * uMVMatrix * aVertexPosition;
+	     gl_PointSize = uPointSize;
 	 }
-	 gl_Position = uPMatrix * uMVMatrix * aVertexPosition;
-	 gl_PointSize = uPointSize;
-     }
-    </script>
+	</script>
 
-    <script id="fragment-shader" type="x-shader/x-fragment">
-     precision mediump float;
-     uniform vec4 uLightAmbient;
-     uniform vec4 uLightDiffuse;
-     uniform vec4 uLightSpecular;
+	<script id="fragment-shader" type="x-shader/x-fragment">
+	 precision mediump float;
+	 uniform vec4 uLightAmbient;
+	 uniform vec4 uLightDiffuse;
+	 uniform vec4 uLightSpecular;
 
-     uniform vec4 uMaterialAmbient;
-     uniform vec4 uMaterialDiffuse;
-     uniform vec4 uMaterialSpecular;
-     uniform float uShininess;
+	 uniform vec4 uMaterialAmbient;
+	 uniform vec4 uMaterialDiffuse;
+	 uniform vec4 uMaterialSpecular;
+	 uniform float uShininess;
 
-     uniform bool uPerVertexColor;
+	 uniform bool uPerVertexColor;
 
-     varying vec3 vNormal, vLightVec, vEyeVec;
-     varying vec4 vFinalColor;
+	 varying vec3 vNormal, vLightVec, vEyeVec;
+	 varying vec4 vFinalColor;
 
-     void main(void) {
-	 if (uPerVertexColor) {
-	     gl_FragColor = vFinalColor;
-	 } else {
-	     vec4 fColor;
+	 void main(void) {
+	     if (uPerVertexColor) {
+		 gl_FragColor = vFinalColor;
+	     } else {
+		 vec4 fColor;
 
-	     vec3 L = normalize(vLightVec);
-	     vec3 N = normalize(vNormal);
-	     vec3 E = normalize(vEyeVec);
-	     vec3 R = reflect(L, N);
+		 vec3 L = normalize(vLightVec);
+		 vec3 N = normalize(vNormal);
+		 vec3 E = normalize(vEyeVec);
+		 vec3 R = reflect(L, N);
 
-	     vec4 ambient = uLightAmbient * uMaterialAmbient;
+		 vec4 ambient = uLightAmbient * uMaterialAmbient;
 
-	     float Kd = max(dot(N, -L), 0.0);
-	     vec4  diffuse = Kd * uLightDiffuse * uMaterialDiffuse;
+		 float Kd = max(dot(N, -L), 0.0);
+		 vec4  diffuse = Kd * uLightDiffuse * uMaterialDiffuse;
 
-	     float Ks = pow(max(dot(R, E), 0.0), uShininess);
-	     vec4  specular = Ks * uLightSpecular * uMaterialSpecular;
+		 float Ks = pow(max(dot(R, E), 0.0), uShininess);
+		 vec4  specular = Ks * uLightSpecular * uMaterialSpecular;
 
-	     fColor = ambient + diffuse + specular;
-	     fColor.a = 1.0;
+		 fColor = ambient + diffuse + specular;
+		 fColor.a = 1.0;
 
-	     gl_FragColor = fColor;
+		 gl_FragColor = fColor;
+	     }
 	 }
-     }
-    </script>
+	</script>
 
-    <script type="text/javascript" src="common/webgl-utils.js"></script>
-    <script type="text/javascript" src="common/initShaders.js"></script>
-    <script type="text/javascript" src="common/MV.js"></script>
-    <script type="text/javascript" src="js/utils.js"></script>
-    <script type="text/javascript" src="js/Camera.js"></script>
-    <script type="text/javascript" src="js/CameraInteractor.js"></script>
-    <script type="text/javascript" src="js/SceneTransforms.js"></script>
-    <script type="text/javascript" src="js/3dtrees.js"></script>
-  </head>
+	<script type="text/javascript" src="common/webgl-utils.js"></script>
+	<script type="text/javascript" src="common/initShaders.js"></script>
+	<script type="text/javascript" src="common/MV.js"></script>
+	<script type="text/javascript" src="js/utils.js"></script>
+	<script type="text/javascript" src="js/Camera.js"></script>
+	<script type="text/javascript" src="js/CameraInteractor.js"></script>
+	<script type="text/javascript" src="js/SceneTransforms.js"></script>
+	<script type="text/javascript" src="js/3dtrees.js"></script>
+    </head>
 
-  <body>
-    <canvas id="gl-canvas" width="512" height="512">
-      Oops ... your browser doesn't support the HTML5 canvas element
-    </canvas>
-    <div class="description">
-      <p>Drag the mouse to rotate the scene.</p>
-      <p>Press key "Alt" while dragging the mouse to zoom in/out.</p>
-    </div>
-    <div class="controls">
-      <div>
-	<div class="slider">
-	    <label>recursion levels</label>
-	    <input id="recursion-levels-slider" type="range" min="0" max="5" step="1" value="3" />
-	    <label class="right-label">(0:5)</label><label id="rl" class="out">3</label>
+    <body>
+	<canvas id="gl-canvas" width="512" height="512">
+	    Oops ... your browser doesn't support the HTML5 canvas element
+	</canvas>
+	<div class="description">
+	    <p>Drag the mouse to rotate the scene.</p>
+	    <p>Press key "Alt" while dragging the mouse to zoom in/out.</p>
 	</div>
-      </div>
-      <div>
-	<div class="slider">
-	    <label>branch number</label>
-	    <input id="branch-number-slider" type="range" min="1" max="6" step="1" value="4" />
-	    <label class="right-label">(1:6)</label><label id="bn" class="out">4</label>
+	<div class="controls">
+	    <div>
+		<div class="slider">
+		    <label>recursion levels</label>
+		    <input id="recursion-levels-slider" type="range" min="0" max="5" step="1" value="3" />
+		    <label class="right-label">(0:5)</label><label id="rl" class="out">3</label>
+		</div>
+	    </div>
+	    <div>
+		<div class="slider">
+		    <label>branch number</label>
+		    <input id="branch-number-slider" type="range" min="1" max="6" step="1" value="4" />
+		    <label class="right-label">(1:6)</label><label id="bn" class="out">4</label>
+		</div>
+		<label class="cboxlabel"><input type="checkbox" id="bn-cbox" value="off">rand</label>
+	    </div>
+	    <div>
+		<div class="slider">
+		    <label>angle about z</label>
+		    <input id="tz-slider" type="range" min="20" max="80" step="10" value="50" />
+		    <label class="right-label">(20:80)</label><label id="tz" class="out">50</label>
+		</div>
+		<label class="cboxlabel"><input type="checkbox" id="tz-cbox" value="off">rand</label>
+	    </div>
+	    <div>
+		<div class="slider">
+		    <label>scaling factor</label>
+		    <input id="scaling-slider" type="range" min="0.2" max="1.0" step="0.1" value="0.6" />
+		    <label class="right-label">(0.2:1.0)</label><label id="sf" class="out">0.6</label>
+		</div>
+		<label class="cboxlabel"><input type="checkbox" id="s-cbox" value="off">rand</label>
+	    </div>
+	    <button id="regenerate">Regenerate Tree</button>
+	    <label class="cboxlabel"><input type="checkbox" id="forest-cbox" value="off">forest</label>
+	    <div>
+		<button id="btn-light-pos">Toggle Updating Light Position</button>
+		<label id="toggle-light-pos">Not Updating Light Position</label>
+	    </div>
+	    <div>
+		<button id="btn-lighting">Toggle Lighting</button>
+		<label id="toggle-lighting">Lighting Enabled</label>
+	    </div>
 	</div>
-	<label class="cboxlabel"><input type="checkbox" id="bn-cbox" value="off">rand</label>
-      </div>
-      <div>
-	<div class="slider">
-	    <label>angle about z</label>
-	    <input id="tz-slider" type="range" min="20" max="80" step="10" value="50" />
-	    <label class="right-label">(20:80)</label><label id="tz" class="out">50</label>
-	</div>
-	<label class="cboxlabel"><input type="checkbox" id="tz-cbox" value="off">rand</label>
-      </div>
-      <div>
-	<div class="slider">
-	    <label>scaling factor</label>
-	    <input id="scaling-slider" type="range" min="0.2" max="1.0" step="0.1" value="0.6" />
-	    <label class="right-label">(0.2:1.0)</label><label id="sf" class="out">0.6</label>
-	</div>
-	<label class="cboxlabel"><input type="checkbox" id="s-cbox" value="off">rand</label>
-      </div>
-      <button id="regenerate">Regenerate Tree</button>
-	<div>
-	<button id="btn-light-pos">Toggle Updating Light Position</button>
-	<label id="toggle-light-pos">Not Updating Light Position</label>
-	</div>
-	<div>
-	<button id="btn-lighting">Toggle Lighting</button>
-	<label id="toggle-lighting">Lighting Enabled</label>
-	</div>
-    </div>
-    <table id="tbl-matrix">
-      <tr><td id='m0' style='font-weight:bold'></td><td id='m4' style='font-weight:bold'></td><td id='m8' style='font-weight:bold'></td><td id='m12'></td></tr>
-      <tr><td id='m1' style='font-weight:bold'></td><td id='m5' style='font-weight:bold'></td><td id='m9' style='font-weight:bold'></td><td id='m13'></td></tr>
-      <tr><td id='m2' style='font-weight:bold'></td><td id='m6' style='font-weight:bold'></td><td id='m10' style='font-weight:bold'></td><td id='m14'></td></tr>
-      <tr><td id='m3'></td><td id='m7'></td><td id='m11'></td><td id='m15'></td></tr>
-    </table>
-  </body>
+	<table id="tbl-matrix">
+	    <tr><td id='m0' style='font-weight:bold'></td><td id='m4' style='font-weight:bold'></td><td id='m8' style='font-weight:bold'></td><td id='m12'></td></tr>
+	    <tr><td id='m1' style='font-weight:bold'></td><td id='m5' style='font-weight:bold'></td><td id='m9' style='font-weight:bold'></td><td id='m13'></td></tr>
+	    <tr><td id='m2' style='font-weight:bold'></td><td id='m6' style='font-weight:bold'></td><td id='m10' style='font-weight:bold'></td><td id='m14'></td></tr>
+	    <tr><td id='m3'></td><td id='m7'></td><td id='m11'></td><td id='m15'></td></tr>
+	</table>
+    </body>
 </html>
