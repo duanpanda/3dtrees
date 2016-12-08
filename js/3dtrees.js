@@ -100,10 +100,18 @@ window.onload = function init() {
     configure();
     initProgram();
     initLights();
-    initObjData();
 
     document.getElementById('btn-light-pos').onclick = toggleLightPos;
     document.getElementById('btn-lighting').onclick = toggleLighting;
+
+    var recursionSlider = document.getElementById('recursion-levels-slider');
+    numTimesToSubdivide = recursionSlider.valueAsNumber;
+    document.getElementById('rl').innerHTML = recursionSlider.valueAsNumber;
+    recursionSlider.onchange = function(event) {
+	numTimesToSubdivide = recursionSlider.valueAsNumber;
+	document.getElementById('rl').innerHTML = recursionSlider.valueAsNumber;
+	initObjData();
+    };
     var branchNumSlider = document.getElementById('branch-number-slider');
     branchNum = branchNumSlider.value - 1;
     document.getElementById('bn').innerHTML = branchNumSlider.value;
@@ -128,6 +136,8 @@ window.onload = function init() {
 	document.getElementById('sf').innerHTML = scalingSlider.value;
 	initObjData();
     };
+
+    initObjData();
 
     render();
 };
@@ -295,7 +305,7 @@ function genTree(arg, n) {
 	genTree(newArg, n - 1);
 	for (var i = 0; i < branchNum; i++) {
 	    newArg = {'base': cone.getTipPos(),
-		      'tz': tz,// getRandomInt(0, tz),
+		      'tz': tz,
 		      'ty': ty + i * 360 / branchNum,
 		      's': coneArg.s * scaleFactor,
 		      'parentR': cone.getR()};

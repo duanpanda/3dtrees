@@ -96,22 +96,30 @@
     <canvas id="gl-canvas" width="512" height="512">
       Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
-    <div class="description">Drag the mouse to rotate the scene.</div>
+    <div class="description">
+      <p>Drag the mouse to rotate the scene.</p>
+      <p>Press key "Alt" while dragging the mouse to zoom in/out.</p>
+    </div>
     <div class="controls">
 	<div class="slider">
-	    <label>branch number</label>
-	    <input id="branch-number-slider" type="range" min="1" max="5" step="1" value="3" />
-	    <label>(1 to 5)</label><label id="bn" class="out">3</label>
+	    <label>recursion levels</label>
+	    <input id="recursion-levels-slider" type="range" min="0" max="5" step="1" value="3" />
+	    <label class="right-label">(0 to 5)</label><label id="rl" class="out">3</label>
 	</div>
 	<div class="slider">
-	    <label>tz</label>
+	    <label>branch number</label>
+	    <input id="branch-number-slider" type="range" min="1" max="5" step="1" value="4" />
+	    <label class="right-label">(1 to 5)</label><label id="bn" class="out">4</label>
+	</div>
+	<div class="slider">
+	    <label>angle about z</label>
 	    <input id="tz-slider" type="range" min="20" max="80" step="10" value="50" />
-	    <label>(20 to 80)</label><label id="tz" class="out">50</label>
+	    <label class="right-label">(20 to 80)</label><label id="tz" class="out">50</label>
 	</div>
 	<div class="slider">
 	    <label>scaling factor</label>
 	    <input id="scaling-slider" type="range" min="0.2" max="1.0" step="0.1" value="0.6" />
-	    <label>(0.2 to 1.0)</label><label id="sf" class="out">0.6</label>
+	    <label class="right-label">(0.2 to 1.0)</label><label id="sf" class="out">0.6</label>
 	</div>
 	<div>
 	<button id="btn-light-pos">Toggle Updating Light Position</button>

@@ -28,8 +28,8 @@ h1 {
 }
 
 .controls {
-    text-align: center;
-    width: 600px;
+    text-align: left;
+    width: 512px;
     margin: 5px;
     float: left;
 }
@@ -68,7 +68,7 @@ h1 {
 
 .controls label {
     display: inline-block;
-    color: pink;
+    color: cornflowerblue;
 }
 
 a:link, a:visited {
@@ -77,9 +77,15 @@ a:link, a:visited {
 
 .controls .slider label {
     font-weight: normal;
-    width: 150px;
+    width: 120px;
     height: 25px;
     margin: 2px 0;
+    text-align: right;
+}
+
+.controls .slider .right-label {
+    text-align: left;
+    width: 90px;
 }
 
 .controls .slider {
@@ -88,11 +94,12 @@ a:link, a:visited {
 }
 
 .slider input {
-    width: 256px;
+    width: 180px;
 }
 
-.slider .out {
+.controls .slider .out {
     display: inline-block;
+    font-weight: bold;
     color: blue;
     width: 10px;
 }
