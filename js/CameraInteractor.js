@@ -60,19 +60,37 @@ CameraInteractor.prototype.onKeyDown = function(ev) {
     this.ctrl = ev.ctrlKey;
     this.alt = ev.altKey;
     if (!this.ctrl){
-	if (this.key == 38) {	// up arrow
-	    c.changeElevation(10);
-	} else if (this.key == 40) { // down arrow
-	    c.changeElevation(-10);
-	} else if (this.key == 37) { // left arrow
+	if (this.key == 83) {	// s, move camera up
+	    if (c.type == CAMERA_ORBIT_TYPE) {
+		c.changeElevation(10);
+	    } else if (c.type == CAMERA_TRACKING_TYPE) {
+		c.changeElevation(-10);
+	    }
+	} else if (this.key == 87) { // w, move camera down
+	    if (c.type == CAMERA_ORBIT_TYPE) {
+		c.changeElevation(-10);
+	    } else if (c.type == CAMERA_TRACKING_TYPE) {
+		c.changeElevation(10);
+	    }
+	} else if (this.key == 65) { // a
 	    c.changeAzimuth(10);
-	} else if (this.key == 39) { // right arrow
+	} else if (this.key == 68) { // d
 	    c.changeAzimuth(-10);
-	} else if (this.key == 87) { // w
+	} else if (this.key == 81) { // q
+	    this.dstep = Math.max(Math.abs(this.camera.position[0]),
+				  Math.abs(this.camera.position[1]),
+				  Math.abs(this.camera.position[2])) / 100;
+	    this.dolly(10);
+	} else if (this.key == 69) { // e
+	    this.dstep = Math.max(Math.abs(this.camera.position[0]),
+				  Math.abs(this.camera.position[1]),
+				  Math.abs(this.camera.position[2])) / 100;
+	    this.dolly(-10);
+	} else if (this.key == 38) { // up arrow
             if (fovy) fovy += 5;
             console.info('FovY:'+fovy);
-        } else if (this.key == 83) { // s
-            if (fovy) fovy -= 5;
+        } else if (this.key == 40) { // down arrow
+            if (fovy > 5) fovy -= 5;
             console.info('FovY:'+fovy);
         }
     }
