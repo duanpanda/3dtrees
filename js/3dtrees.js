@@ -56,6 +56,7 @@ var leaves = [];
 var isPolygonLeaf = false;
 var isDrawAxis = true;
 var isDrawFloor = true;
+var colorFromPicker;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -207,6 +208,12 @@ function initGUIControls() {
     floorCbox.onchange = function(event) {
 	isDrawFloor = floorCbox.checked;
     };
+    var colorPicker = document.getElementById('segment-color');
+    colorFromPicker = hexToRgbVec4(colorPicker.value);
+    colorPicker.onchange = function(event) {
+	colorFromPicker = hexToRgbVec4(colorPicker.value);
+	setConesColor(colorFromPicker);
+    };
 }
 
 window.onload = function init() {
@@ -296,9 +303,9 @@ function Cone(arg) {
     this.vbo = gl.createBuffer();
     this.cbo = gl.createBuffer();
     this.nbo = gl.createBuffer();
-    this.color = vec4(0.0, 0.0, 0.0, 1.0);
+    this.color = colorFromPicker;
 
-    this.ambient = coneColorPallete[getRandomInt(0, coneColorPallete.length)];
+    this.ambient = this.color;
     this.diffuse = this.ambient;
     this.specular = this.diffuse;
     this.shininess = coneShininess;
@@ -530,4 +537,19 @@ function genLeaf(arg) {
     var leaf = new Leaf(arg);
     leaves.push(leaf);
     return leaf;
+}
+
+function setConesColor(color) {
+    for (var i = 0; i < cones.length; i++) {
+	cones[i].setColor(color);
+	cones[i].ambient = cones[i].diffuse = cones[i].specular = color;
+    }
+}
+
+function hexToRgbVec4(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ?
+	vec4(parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255,
+	     parseInt(result[3], 16) / 255, 1.0)
+	: null;
 }
