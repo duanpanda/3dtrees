@@ -8,12 +8,6 @@ var lightPosition = vec4(1.0, 1.5, 1.2, 1.0);
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
 var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-var coneColorPallete = [
-    // vec4(0.9, 0.1, 0.1, 1.0),
-    // vec4(116/255, 23/255, 1.0, 1.0),
-    // vec4(0.1, 0.9, 0.1, 1.0),
-    // vec4(1.0, 0.0, 144/255, 1.0),
-    vec4(1.0, 112/255, 112/255, 1.0)];
 var coneShininess = 100.0;
 var leafColor = vec4(0.0, 0.8, 0.0, 1.0);
 var leafShininess = 50.0;
@@ -57,6 +51,9 @@ var isPolygonLeaf = false;
 var isDrawAxis = true;
 var isDrawFloor = true;
 var colorFromPicker;
+const TREE_MODE_1 = 0;		// one leaf added at the end of a branch
+const TREE_MODE_2 = 1;		// leaves replacing the end branches
+var treeMode = TREE_MODE_1;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -387,9 +384,6 @@ function Cone(arg) {
 	var tip = mat4_multiplyVec4(m, baseTip);
 	return tip;
     };
-    this.getArg = function() {
-	return arg;
-    };
     this.getR = function() {
 	return mult(arg.parentR, this.R);
     };
@@ -402,20 +396,30 @@ function genCone(arg) {
 }
 
 function genTree(arg, n) {
+    var cone, newArg;
     if (n == 0) {
 	if (isPolygonLeaf) {
-	    genLeaf(arg);
+	    if (treeMode == TREE_MODE_1) {
+		cone = genCone(arg);
+		newArg = {'base': cone.getTipPos(),
+			  'tz': 0,
+			  'ty': 0,
+			  's': arg.s * scaleFactor,
+			  'parentR': cone.getR()};
+		genLeaf(newArg);
+	    } else if (treeMode == TREE_MODE_2) {
+		genLeaf(arg);
+	    }
 	} else {
 	    genCone(arg);
 	}
     } else {
-	var cone = genCone(arg);
-	var coneArg = cone.getArg();
-	var newArg = {'base': cone.getTipPos(),
-		      'tz': 0,
-		      'ty': 0,
-		      's': coneArg.s * scaleFactor,
-		      'parentR': cone.getR()};
+	cone = genCone(arg);
+	newArg = {'base': cone.getTipPos(),
+		  'tz': 0,
+		  'ty': 0,
+		  's': arg.s * scaleFactor,
+		  'parentR': cone.getR()};
 	genTree(newArg, n - 1);
 	var bn = isRandBranchNum ? getRandomInt(0, 6) : branchNum;
 	var new_tz = isRandTz ? getRandomInt(20, 80) : tz;
@@ -424,7 +428,7 @@ function genTree(arg, n) {
 	    newArg = {'base': cone.getTipPos(),
 		      'tz': new_tz,
 		      'ty': ty + i * 360 / bn,
-		      's': coneArg.s * new_sf,
+		      's': arg.s * new_sf,
 		      'parentR': cone.getR()};
 	    genTree(newArg, n - 1);
 	}
@@ -490,8 +494,9 @@ function Leaf(arg) {
 	    vec4(0.25, 0.25, 0, 1.0), vec4(0.15, 0.15, 0, 1.0),
 	    vec4(0.25, 0.08, 0, 1.0)];
 	this.indices = [
-	    0, 1, 2,	1, 2, 3,	 4, 5, 7,	 5, 7, 6,	 6, 7, 8,
-	    4, 9, 7,	4, 10, 11,	5, 12, 6,	 5, 14, 13];
+	    0, 1, 2,	1, 2, 3,	 4, 5, 7,	 5, 7, 6,
+	    6, 7, 8,	4, 9, 7,	4, 10, 11,	5, 12, 6,
+	    5, 14, 13];
 	this.calcNormals();
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
@@ -529,7 +534,8 @@ function Leaf(arg) {
 	    gl.vertexAttribPointer(prg.aVertexNormal, 4, gl.FLOAT, false, 0, 0);
 	}
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.ibo);
-	gl.drawElements(this.drawMode, this.indices.length, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(this.drawMode, this.indices.length,
+			gl.UNSIGNED_SHORT, 0);
     };
 }
 
