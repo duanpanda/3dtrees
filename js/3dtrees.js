@@ -195,6 +195,16 @@ function initGUIControls() {
 	cameraType = CAMERA_TRACKING_TYPE;
 	configure();
     };
+    var mode1Radio = document.getElementById('opt-mode-1');
+    mode1Radio.onclick = function(event) {
+	treeMode = TREE_MODE_1;
+	initObjData();
+    };
+    var mode2Radio = document.getElementById('opt-mode-2');
+    mode2Radio.onclick = function(event) {
+	treeMode = TREE_MODE_2;
+	initObjData();
+    };
     var axisCbox = document.getElementById('axis-cbox');
     isDrawAxis = axisCbox.checked;
     axisCbox.onchange = function(event) {
