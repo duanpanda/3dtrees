@@ -119,6 +119,7 @@ function initObjData() {
 	camera.goHome(cameraHome);
 	genTree(rootArg, numTimesToSubdivide);
     }
+    Floor.build(10, 1);
     Axis.build(10);
 }
 
@@ -224,6 +225,8 @@ function render() {
     transform.setMatrixUniforms();
     gl.uniform1i(prg.uPerVertexColor, Axis.perVertexColor);
     Axis.redraw();
+    gl.uniform1i(prg.uPerVertexColor, Floor.perVertexColor);
+    Floor.redraw();
 
     gl.uniform1i(prg.uPerVertexColor, disableLighting);
     for (var i = 0; i < cones.length; i++) {
