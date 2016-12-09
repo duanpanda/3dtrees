@@ -119,6 +119,7 @@ function initObjData() {
 	camera.goHome(cameraHome);
 	genTree(rootArg, numTimesToSubdivide);
     }
+    Axis.build(10);
 }
 
 function initGUIControls() {
@@ -219,6 +220,12 @@ function render() {
     gl.uniform1i(prg.uPerVertexColor, disableLighting);
 
     var newMVMatrix;
+
+    transform.setMatrixUniforms();
+    gl.uniform1i(prg.uPerVertexColor, Axis.perVertexColor);
+    Axis.redraw();
+
+    gl.uniform1i(prg.uPerVertexColor, disableLighting);
     for (var i = 0; i < cones.length; i++) {
 	var cone = cones[i];
 	transform.push();
@@ -429,11 +436,8 @@ function Leaf(arg) {
     this.drawMode = gl.TRIANGLES;
     this.calcNormals = function() {
 	this.normals = new Array(this.indices.length);
-	for (var i = 0; i < this.normals.length / 2; i++) {
+	for (var i = 0; i < this.normals.length; i++) {
 	    this.normals[i] = vec4(0, 0, 1, 0);
-	}
-	for (i = this.normals.length / 2; i < this.normals.length; i++) {
-	    this.normals[i] = vec4(0, 0, -1, 0);
 	}
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.nbo);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(this.normals), gl.STATIC_DRAW);
@@ -460,8 +464,6 @@ function Leaf(arg) {
 	    vec4(0.25, 0.25, 0, 1.0), vec4(0.15, 0.15, 0, 1.0),
 	    vec4(0.25, 0.08, 0, 1.0)];
 	this.indices = [
-	    0, 1, 2,	1, 2, 3,	 4, 5, 7,	 5, 7, 6,	 6, 7, 8,
-	    4, 9, 7,	4, 10, 11,	5, 12, 6,	 5, 14, 13,
 	    0, 1, 2,	1, 2, 3,	 4, 5, 7,	 5, 7, 6,	 6, 7, 8,
 	    4, 9, 7,	4, 10, 11,	5, 12, 6,	 5, 14, 13];
 	this.calcNormals();
