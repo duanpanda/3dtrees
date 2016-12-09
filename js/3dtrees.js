@@ -54,6 +54,8 @@ var isRandScaling = false;
 var isForest = false;
 var leaves = [];
 var isPolygonLeaf = false;
+var isDrawAxis = true;
+var isDrawFloor = true;
 
 function configure() {
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -195,6 +197,16 @@ function initGUIControls() {
 	cameraType = CAMERA_TRACKING_TYPE;
 	configure();
     };
+    var axisCbox = document.getElementById('axis-cbox');
+    isDrawAxis = axisCbox.checked;
+    axisCbox.onchange = function(event) {
+	isDrawAxis = axisCbox.checked;
+    };
+    var floorCbox = document.getElementById('floor-cbox');
+    isDrawFloor = floorCbox.checked;
+    floorCbox.onchange = function(event) {
+	isDrawFloor = floorCbox.checked;
+    };
 }
 
 window.onload = function init() {
@@ -223,10 +235,14 @@ function render() {
     var newMVMatrix;
 
     transform.setMatrixUniforms();
-    gl.uniform1i(prg.uPerVertexColor, Axis.perVertexColor);
-    Axis.redraw();
-    gl.uniform1i(prg.uPerVertexColor, Floor.perVertexColor);
-    Floor.redraw();
+    if (isDrawAxis) {
+	gl.uniform1i(prg.uPerVertexColor, Axis.perVertexColor);
+	Axis.redraw();
+    }
+    if (isDrawFloor) {
+	gl.uniform1i(prg.uPerVertexColor, Floor.perVertexColor);
+	Floor.redraw();
+    }
 
     gl.uniform1i(prg.uPerVertexColor, disableLighting);
     for (var i = 0; i < cones.length; i++) {
